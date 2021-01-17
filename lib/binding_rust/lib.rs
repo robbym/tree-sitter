@@ -1682,17 +1682,25 @@ impl<'a> QueryMatch<'a> {
             .iter()
             .all(|predicate| match predicate {
                 TextPredicate::CaptureEqCapture(i, j, is_positive) => {
-                    let node1 = self.capture_for_index(*i).unwrap();
-                    let node2 = self.capture_for_index(*j).unwrap();
-                    (text_callback(node1).as_ref() == text_callback(node2).as_ref()) == *is_positive
+                    if let (Some(node1), Some(node2)) = (self.capture_for_index(*i), self.capture_for_index(*j)) {
+                        (text_callback(node1).as_ref() == text_callback(node2).as_ref()) == *is_positive
+                    } else {
+                        true
+                    }
                 }
                 TextPredicate::CaptureEqString(i, s, is_positive) => {
-                    let node = self.capture_for_index(*i).unwrap();
-                    (text_callback(node).as_ref() == s.as_bytes()) == *is_positive
+                    if let Some(node) = self.capture_for_index(*i) {
+                        (text_callback(node).as_ref() == s.as_bytes()) == *is_positive
+                    } else {
+                        true
+                    }
                 }
                 TextPredicate::CaptureMatchString(i, r, is_positive) => {
-                    let node = self.capture_for_index(*i).unwrap();
-                    r.is_match(text_callback(node).as_ref()) == *is_positive
+                    if let Some(node) = self.capture_for_index(*i) {
+                        r.is_match(text_callback(node).as_ref()) == *is_positive
+                    } else {
+                        true
+                    }
                 }
             })
     }
